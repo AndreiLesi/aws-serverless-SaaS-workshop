@@ -1,0 +1,1 @@
+{"filename": "builds/e5458b20c06aa3584a14f26a0f34b19f1cc196c3f15a921ce19d9aab9adbdf26.zip", "runtime": "python3.12", "artifacts_dir": "builds", "build_plan": [["pip", "python3.12", "../../modules/shared_services/../../../src/server/TenantManagementService/requirements.txt", null, null], ["zip", "../../modules/shared_services/../../../src/server/TenantManagementService", null]]}
