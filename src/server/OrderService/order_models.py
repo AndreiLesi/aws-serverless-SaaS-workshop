@@ -3,8 +3,10 @@
 
 class Order:
     key=''
-    def __init__(self, orderId, orderName, orderProducts):
+    def __init__(self, shardId, orderId, orderName, orderProducts):
+        self.shardId = shardId
         self.orderId = orderId
+        self.key = shardId + ':' +  orderId
         self.orderName = orderName
         self.orderProducts = orderProducts
 

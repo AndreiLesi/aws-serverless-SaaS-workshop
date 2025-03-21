@@ -10,38 +10,22 @@ import time
 import logger
 from jose import jwk, jwt
 from jose.utils import base64url_decode
-import utils
 import auth_manager
+import utils
 
 region = os.environ['AWS_REGION']
-sts_client = boto3.client("sts", region_name=region)
-dynamodb = boto3.resource('dynamodb')
-table_tenant_details = dynamodb.Table('ServerlessSaaS-TenantDetails')
-user_pool_operation_user = os.environ['OPERATION_USERS_USER_POOL']
-app_client_operation_user = os.environ['OPERATION_USERS_APP_CLIENT']
-tenant_userpool_id = os.environ['TENANT_USER_POOL']
-tenant_appclient_id = os.environ['TENANT_APP_CLIENT']
+
+userpool_id = os.environ['TENANT_USER_POOL']
+appclient_id = os.environ['TENANT_APP_CLIENT']
 
 def lambda_handler(event, context):
     
     #get JWT token after Bearer from authorization
-    token = event['headers']['authorization'].split(" ")
+    token = event['authorizationToken'].split(" ")
     if (token[0] != 'Bearer'):
         raise Exception('Authorization header should have a format Bearer <JWT> Token')
     jwt_bearer_token = token[1]
     logger.info("Method ARN: " + event['methodArn'])
-    
-    #only to get tenant id to get user pool info
-    unauthorized_claims = jwt.get_unverified_claims(jwt_bearer_token)
-    logger.info(unauthorized_claims)
-
-    if(auth_manager.isSaaSProvider(unauthorized_claims['custom:userRole'])):
-        userpool_id = user_pool_operation_user
-        appclient_id = app_client_operation_user  
-    else:
-        #get tenant user pool and app client to validate jwt token against
-        userpool_id = tenant_userpool_id
-        appclient_id = tenant_appclient_id 
     
     #get keys for tenant user pool to validate
     keys_url = 'https://cognito-idp.{}.amazonaws.com/{}/.well-known/jwks.json'.format(region, userpool_id)
@@ -61,7 +45,7 @@ def lambda_handler(event, context):
         principal_id = response["sub"]
         user_name = response["cognito:username"]
         tenant_id = response["custom:tenantId"]
-        user_role = response["custom:userRole"]
+        
     
     tmp = event['methodArn'].split(':')
     api_gateway_arn_tmp = tmp[5].split('/')
@@ -73,20 +57,12 @@ def lambda_handler(event, context):
     policy.stage = api_gateway_arn_tmp[1]
 
 
-    #only tenant admin and system admin can do certain actions like create and disable users
-    #TODO: Add policy so that only tenant and SaaS admins can add/modify tenant information
+    #roles are not fine-grained enough to allow selectively
+    policy.allowAllMethods()        
     
-
     authResponse = policy.build()
  
-    context = {
-        'userName': user_name,
-        'userPoolId': userpool_id,
-        'tenantId': tenant_id,
-        'userRole': user_role
-    }
-    
-    authResponse['context'] = context
+    # TODO: Add tenant context to authResponse
     
     return authResponse
 

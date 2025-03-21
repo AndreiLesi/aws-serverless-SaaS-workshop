@@ -69,3 +69,7 @@ output "enable_users_by_tenant_function" {
 output "shared_services_authorizer_function" {
   value = module.lambda_shared_services_authorizer
 }
+
+output "serverless_saas_layer" {
+  value = module.serverless_saas_layer
+}

@@ -1,1 +1,0 @@
-{"filename": "builds/0a443a42f49a9f1eb8bacbffa17e08968f0a0eab5f92b20f0a5e48524f140e40.zip", "runtime": "python3.12", "artifacts_dir": "builds", "build_plan": [["zip", "../../modules/shared_services/../../../src/server/layers", null], ["pip", "python3.12", "../../modules/shared_services/../../../src/server/layers/python/requirements.txt", "python", null]]}

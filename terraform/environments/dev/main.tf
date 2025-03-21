@@ -84,3 +84,15 @@ module "admin_api_gateway" {
 ###################################################
 # Lab 3 - Serverless SaaS Application Deployment
 ###################################################
+
+# Orders Microservice
+module "order_microservice" {
+  source = "../../modules/order_microservice"
+  serverless_saas_layer_arn = module.shared_services.serverless_saas_layer.lambda_function_arn
+}
+
+# Products Microservice
+module "product_microservice" {
+  source = "../../modules/product_microservice"
+  serverless_saas_layer_arn = module.shared_services.serverless_saas_layer.lambda_function_arn
+}
