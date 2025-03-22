@@ -1,9 +1,10 @@
-module "product_function_execution_role" {
+# Tenant Authorizer Execution Role
+module "tenant_authorizer_execution_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
   version = "~> 5.54.0"
 
   create_role = true
-  role_name   = "product-function-execution-role"
+  role_name   = "tenant-authorizer-execution-role"
   role_path   = "/"
   role_requires_mfa = false
 
@@ -14,24 +15,16 @@ module "product_function_execution_role" {
     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
     "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
   ]
-
+  
   inline_policy_statements = [
     {
-      name   = "product-function-policy"
       effect = "Allow"
       actions = [
-        "dynamodb:GetItem",
-        "dynamodb:UpdateItem",
-        "dynamodb:PutItem",
-        "dynamodb:DeleteItem",
-        "dynamodb:Query"
+        "cognito-idp:List*"
       ]
-      resources = [module.product_table.dynamodb_table_arn]
+      resources = [
+        "arn:aws:cognito-idp:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:userpool/*"
+      ]
     }
   ]
-
-  tags = {
-    Name = "product-function-execution-role"
-    Service = "product-microservice"
-  }
 }

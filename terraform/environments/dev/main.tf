@@ -88,11 +88,33 @@ module "admin_api_gateway" {
 # Orders Microservice
 module "order_microservice" {
   source = "../../modules/order_microservice"
-  serverless_saas_layer_arn = module.shared_services.serverless_saas_layer.lambda_function_arn
+  serverless_saas_layer_arn = module.shared_services.serverless_saas_layer.lambda_layer_arn
 }
 
 # Products Microservice
 module "product_microservice" {
   source = "../../modules/product_microservice"
-  serverless_saas_layer_arn = module.shared_services.serverless_saas_layer.lambda_function_arn
+  serverless_saas_layer_arn = module.shared_services.serverless_saas_layer.lambda_layer_arn
 }
+
+# Tenant API Gateway
+module "tenant_api_gateway" {
+  source = "../../modules/tenant_api_gateway"
+  
+  cognito_tenant_user_pool_id = module.cognito_user_authentication.cognito_user_pool_id
+  cognito_tenant_app_client_id = module.cognito_user_authentication.cognito_user_pool_client_id
+  
+  get_order_function_arn = module.order_microservice.get_order_function.lambda_function_invoke_arn
+  update_order_function_arn = module.order_microservice.update_order_function.lambda_function_invoke_arn
+  delete_order_function_arn = module.order_microservice.delete_order_function.lambda_function_invoke_arn
+  get_orders_function_arn = module.order_microservice.get_orders_function.lambda_function_invoke_arn
+  create_order_function_arn = module.order_microservice.create_order_function.lambda_function_invoke_arn
+  
+  get_product_function_arn = module.product_microservice.get_product_function.lambda_function_invoke_arn
+  update_product_function_arn = module.product_microservice.update_product_function.lambda_function_invoke_arn
+  delete_product_function_arn = module.product_microservice.delete_product_function.lambda_function_invoke_arn
+  get_products_function_arn = module.product_microservice.get_products_function.lambda_function_invoke_arn
+  create_product_function_arn = module.product_microservice.create_product_function.lambda_function_invoke_arn
+  serverless_saas_layer_arn = module.shared_services.serverless_saas_layer.lambda_layer_arn
+}
+  

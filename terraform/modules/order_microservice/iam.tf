@@ -3,7 +3,7 @@ module "order_function_execution_role" {
   version = "~> 5.54.0"
 
   create_role = true
-  role_name   = "order-function-execution-role-${data.aws_region.current.name}"
+  role_name   = "order-function-execution-role"
   role_path   = "/"
   role_requires_mfa = false
 
@@ -17,7 +17,7 @@ module "order_function_execution_role" {
 
   inline_policy_statements = [
     {
-      name   = "order-function-policy-${data.aws_region.current.name}"
+      name   = "order-function-policy"
       effect = "Allow"
       actions = [
         "dynamodb:GetItem",
