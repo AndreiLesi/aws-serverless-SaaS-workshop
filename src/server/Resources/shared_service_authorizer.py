@@ -25,7 +25,7 @@ tenant_appclient_id = os.environ['TENANT_APP_CLIENT']
 def lambda_handler(event, context):
     
     #get JWT token after Bearer from authorization
-    token = event['headers']['authorization'].split(" ")
+    token = event['authorizationToken'].split(" ")
     if (token[0] != 'Bearer'):
         raise Exception('Authorization header should have a format Bearer <JWT> Token')
     jwt_bearer_token = token[1]
@@ -37,11 +37,11 @@ def lambda_handler(event, context):
 
     if(auth_manager.isSaaSProvider(unauthorized_claims['custom:userRole'])):
         userpool_id = user_pool_operation_user
-        appclient_id = app_client_operation_user  
+        appclient_id = app_client_operation_user
     else:
         #get tenant user pool and app client to validate jwt token against
         userpool_id = tenant_userpool_id
-        appclient_id = tenant_appclient_id 
+        appclient_id = tenant_appclient_id
     
     #get keys for tenant user pool to validate
     keys_url = 'https://cognito-idp.{}.amazonaws.com/{}/.well-known/jwks.json'.format(region, userpool_id)
@@ -72,10 +72,16 @@ def lambda_handler(event, context):
     policy.region = tmp[3]
     policy.stage = api_gateway_arn_tmp[1]
 
-
     #only tenant admin and system admin can do certain actions like create and disable users
-    #TODO: Add policy so that only tenant and SaaS admins can add/modify tenant information
-    
+    if (auth_manager.isTenantAdmin(user_role) or auth_manager.isSystemAdmin(user_role)):
+        policy.allowAllMethods()
+        if (auth_manager.isTenantAdmin(user_role)):
+            policy.denyMethod(HttpVerb.POST, "tenant-activation")
+            policy.denyMethod(HttpVerb.GET, "tenants")
+    else:
+        #if not tenant admin or system admin then only allow to get info and update info
+        policy.allowMethod(HttpVerb.GET, "user/*")
+        policy.allowMethod(HttpVerb.PUT, "user/*")
 
     authResponse = policy.build()
  

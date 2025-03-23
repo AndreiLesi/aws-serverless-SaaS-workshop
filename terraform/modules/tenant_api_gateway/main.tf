@@ -5,17 +5,18 @@ resource "aws_api_gateway_rest_api" "tenant_api_gateway" {
   api_key_source = "AUTHORIZER"
   
   body = templatefile("${path.module}/api.yaml", {
-    GetOrderFunction = var.get_order_function_arn,
-    UpdateOrderFunction = var.update_order_function_arn,
-    DeleteOrderFunction = var.delete_order_function_arn,
-    GetOrdersFunction = var.get_orders_function_arn,
-    CreateOrderFunction = var.create_order_function_arn,
-    GetProductFunction = var.get_product_function_arn,
-    UpdateProductFunction = var.update_product_function_arn,
-    DeleteProductFunction = var.delete_product_function_arn,
-    GetProductsFunction = var.get_products_function_arn,
-    CreateProductFunction = var.create_product_function_arn,
+    GetOrderFunction = var.get_order_function.lambda_function_invoke_arn,
+    UpdateOrderFunction = var.update_order_function.lambda_function_invoke_arn,
+    DeleteOrderFunction = var.delete_order_function.lambda_function_invoke_arn,
+    GetOrdersFunction = var.get_orders_function.lambda_function_invoke_arn,
+    CreateOrderFunction = var.create_order_function.lambda_function_invoke_arn,
+    GetProductFunction = var.get_product_function.lambda_function_invoke_arn,
+    UpdateProductFunction = var.update_product_function.lambda_function_invoke_arn,
+    DeleteProductFunction = var.delete_product_function.lambda_function_invoke_arn,
+    GetProductsFunction = var.get_products_function.lambda_function_invoke_arn,
+    CreateProductFunction = var.create_product_function.lambda_function_invoke_arn,
     BusinessServicesAuthorizerFunction = module.lambda_business_services_authorizer.lambda_function_invoke_arn
+    TenantAuthorizerExecutionRole = module.tenant_api_gateway_authorizer_role.iam_role_arn
   })
 
   endpoint_configuration {

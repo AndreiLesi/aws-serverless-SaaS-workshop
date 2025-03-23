@@ -51,6 +51,8 @@ module "lambda_shared_services_authorizer" {
   environment_variables = {
     OPERATION_USERS_USER_POOL    = var.cognito_operation_users_user_pool_id
     OPERATION_USERS_APP_CLIENT   = var.cognito_operation_users_user_pool_client_id
+    TENANT_USER_POOL  = var.cognito_user_pool_id
+    TENANT_APP_CLIENT = var.cognito_user_pool_client_id
   }
 
   tags = {

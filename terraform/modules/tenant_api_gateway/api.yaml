@@ -22,7 +22,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       security:
-        - Authorizer: []
+        - tenant-authorizer: []
       x-amazon-apigateway-integration:
         uri: ${GetOrderFunction}
         httpMethod: POST
@@ -36,7 +36,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       security:
-        - Authorizer: []
+        - tenant-authorizer: []
       x-amazon-apigateway-integration:
         uri: ${UpdateOrderFunction}
         httpMethod: POST
@@ -58,7 +58,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       security:
-        - Authorizer: []
+        - tenant-authorizer: []
       x-amazon-apigateway-integration:
         uri: ${DeleteOrderFunction}
         httpMethod: POST
@@ -110,7 +110,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       security:
-        - Authorizer: []
+        - tenant-authorizer: []
       x-amazon-apigateway-integration:
         uri: ${GetOrdersFunction}
         httpMethod: POST
@@ -160,7 +160,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       security:
-        - Authorizer: []
+        - tenant-authorizer: []
       x-amazon-apigateway-integration:
         uri: ${CreateOrderFunction}
         httpMethod: POST
@@ -218,7 +218,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       security:
-        - Authorizer: []
+        - tenant-authorizer: []
       x-amazon-apigateway-integration:
         uri: ${GetProductFunction}
         httpMethod: POST
@@ -232,7 +232,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       security:
-        - Authorizer: []
+        - tenant-authorizer: []
       x-amazon-apigateway-integration:
         uri: ${UpdateProductFunction}
         httpMethod: POST
@@ -254,7 +254,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       security:
-        - Authorizer: []
+        - tenant-authorizer: []
       x-amazon-apigateway-integration:
         uri: ${DeleteProductFunction}
         httpMethod: POST
@@ -306,7 +306,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       security:
-        - Authorizer: []
+        - tenant-authorizer: []
       x-amazon-apigateway-integration:
         uri: ${GetProductsFunction}
         httpMethod: POST
@@ -356,7 +356,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       security:
-        - Authorizer: []
+        - tenant-authorizer: []
       x-amazon-apigateway-integration:
         uri: ${CreateProductFunction}
         httpMethod: POST
@@ -401,12 +401,13 @@ components:
     Empty:
       type: object
   securitySchemes:
-    Authorizer:
+    tenant-authorizer:
       type: apiKey
       name: Authorization
       in: header
       x-amazon-apigateway-authtype: custom
       x-amazon-apigateway-authorizer:
         authorizerUri: ${BusinessServicesAuthorizerFunction}
+        authorizerCredentials: ${TenantAuthorizerExecutionRole}
         authorizerResultTtlInSeconds: 30
         type: token

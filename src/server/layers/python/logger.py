@@ -13,3 +13,7 @@ def info(log_message):
 """
 def error(log_message):
     logger.error (log_message)
+
+def log_with_tenant_context(event, log_message):
+    logger.structure_logs(append=True, tenant_id= event['requestContext']['authorizer']['tenantId'])
+    logger.info (log_message)

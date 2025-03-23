@@ -104,17 +104,21 @@ module "tenant_api_gateway" {
   cognito_tenant_user_pool_id = module.cognito_user_authentication.cognito_user_pool_id
   cognito_tenant_app_client_id = module.cognito_user_authentication.cognito_user_pool_client_id
   
-  get_order_function_arn = module.order_microservice.get_order_function.lambda_function_invoke_arn
-  update_order_function_arn = module.order_microservice.update_order_function.lambda_function_invoke_arn
-  delete_order_function_arn = module.order_microservice.delete_order_function.lambda_function_invoke_arn
-  get_orders_function_arn = module.order_microservice.get_orders_function.lambda_function_invoke_arn
-  create_order_function_arn = module.order_microservice.create_order_function.lambda_function_invoke_arn
+  get_order_function = module.order_microservice.get_order_function
+  update_order_function = module.order_microservice.update_order_function
+  delete_order_function = module.order_microservice.delete_order_function
+  get_orders_function = module.order_microservice.get_orders_function
+  create_order_function = module.order_microservice.create_order_function
   
-  get_product_function_arn = module.product_microservice.get_product_function.lambda_function_invoke_arn
-  update_product_function_arn = module.product_microservice.update_product_function.lambda_function_invoke_arn
-  delete_product_function_arn = module.product_microservice.delete_product_function.lambda_function_invoke_arn
-  get_products_function_arn = module.product_microservice.get_products_function.lambda_function_invoke_arn
-  create_product_function_arn = module.product_microservice.create_product_function.lambda_function_invoke_arn
+  get_product_function = module.product_microservice.get_product_function
+  update_product_function = module.product_microservice.update_product_function
+  delete_product_function = module.product_microservice.delete_product_function
+  get_products_function = module.product_microservice.get_products_function
+  create_product_function = module.product_microservice.create_product_function
   serverless_saas_layer_arn = module.shared_services.serverless_saas_layer.lambda_layer_arn
 }
-  
+
+# Application UI
+module "application_ui" {
+  source = "../../modules/application_ui"
+}
