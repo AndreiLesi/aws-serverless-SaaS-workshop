@@ -59,6 +59,5 @@ resource "aws_api_gateway_authorizer" "admin_api_gateway_authorizer" {
   rest_api_id            = aws_api_gateway_rest_api.admin_api_gateway.id
   authorizer_uri         = "arn:aws:apigateway:${data.aws_region.current.name}:lambda:path/2015-03-31/functions/${var.authorizer_function_arn}/invocations"
   authorizer_credentials = module.admin_api_gateway_authorizer_role.iam_role_arn
-  type                   = "REQUEST"
-  identity_source        = "method.request.header.Authorization"
+  authorizer_result_ttl_in_seconds = 60
 }
