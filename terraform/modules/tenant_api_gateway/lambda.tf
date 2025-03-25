@@ -11,7 +11,7 @@ module "lambda_business_services_authorizer" {
   source_path   = "${path.module}/../../../src/server/Resources"
   # build_in_docker = true
   create_role   = false
-  lambda_role   = module.tenant_authorizer_execution_role.iam_role_arn
+  lambda_role   = var.authorizer_execution_role_arn
 
   memory_size   = 256
   tracing_mode  = "Active"

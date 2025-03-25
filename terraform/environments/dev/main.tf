@@ -116,6 +116,7 @@ module "tenant_api_gateway" {
   get_products_function = module.product_microservice.get_products_function
   create_product_function = module.product_microservice.create_product_function
   serverless_saas_layer_arn = module.shared_services.serverless_saas_layer.lambda_layer_arn
+  authorizer_execution_role_arn = module.shared_services.authorizer_execution_role_arn
 }
 
 # Application UI

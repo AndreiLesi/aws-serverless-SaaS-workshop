@@ -16,7 +16,7 @@ resource "aws_api_gateway_rest_api" "tenant_api_gateway" {
     GetProductsFunction = var.get_products_function.lambda_function_invoke_arn,
     CreateProductFunction = var.create_product_function.lambda_function_invoke_arn,
     BusinessServicesAuthorizerFunction = module.lambda_business_services_authorizer.lambda_function_invoke_arn
-    TenantAuthorizerExecutionRole = module.tenant_api_gateway_authorizer_role.iam_role_arn
+    AuthorizerExecutionRoleArn = var.authorizer_execution_role_arn
   })
 
   endpoint_configuration {

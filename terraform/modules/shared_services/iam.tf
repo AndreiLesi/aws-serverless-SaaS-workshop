@@ -43,6 +43,47 @@ module "authorizer_execution_role" {
   }
 }
 
+
+# Authorizer Access Role
+module "authorizer_access_role" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
+  version = "~> 5.54.0"
+
+  role_name   = "authorizer-access-role"
+  role_path   = "/"
+  role_requires_mfa = false
+  create_role = true
+
+  trusted_role_arns = [
+    module.authorizer_execution_role.iam_role_arn
+  ]
+
+  inline_policy_statements = [
+    {
+      name   = "authorizer-access-role-policy"
+      effect = "Allow"
+      actions = [
+        "dynamodb:BatchGetItem",
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:Query",
+        "dynamodb:Scan"
+      ]
+      resources = [
+        "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/*"
+      ]
+    }
+  ]
+
+  tags = {
+    Name = "authorizer-access-role"
+    Service = "shared-services"
+  }
+}
+
+
 # Tenant Userpool Lambda execution role
 module "tenant_userpool_lambda_execution_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"

@@ -73,3 +73,11 @@ output "shared_services_authorizer_function" {
 output "serverless_saas_layer" {
   value = module.serverless_saas_layer
 }
+
+output "authorizer_execution_role_arn" {
+  value = module.authorizer_execution_role.iam_role_arn
+}
+
+output "authorizer_access_role_arn" {
+  value = module.authorizer_access_role.iam_role_arn
+}

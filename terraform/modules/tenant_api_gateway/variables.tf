@@ -67,3 +67,9 @@ variable "serverless_saas_layer_arn" {
   description = "ARN of the Lambda layer containing shared serverless SaaS code"
   type        = string
 }
+
+variable "authorizer_execution_role_arn" {
+  description = "ARN of the authorizer execution role"
+  type        = string
+}
+  
