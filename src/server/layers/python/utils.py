@@ -13,6 +13,10 @@ class StatusCodes(Enum):
     SUCCESS    = 200
     UN_AUTHORIZED  = 401
     NOT_FOUND = 404
+
+class Service_Identifier(Enum):
+    SHARED_SERVICES     = "SharedServices"
+    BUSINESS_SERVICES    = "BusinessServices"
     
 def create_success_response(message):
     return {
@@ -39,7 +43,6 @@ def create_unauthorized_response():
             "message": "User not authorized to perform this action"
         }),
     }
-
 
 def generate_response(inputObject):
     return {

@@ -83,6 +83,5 @@ resource "aws_lambda_permission" "authorizer_permission" {
   action        = "lambda:InvokeFunction"
   function_name = module.lambda_business_services_authorizer.lambda_function_name
   principal     = "apigateway.amazonaws.com"
-#   source_arn    = "${aws_api_gateway_rest_api.tenant_api_gateway.execution_arn}/authorizers/${aws_api_gateway_authorizer.tenant_authorizer.id}"
-  source_arn    = "${aws_api_gateway_rest_api.tenant_api_gateway.execution_arn}/*/*/*"
+  source_arn    = "${aws_api_gateway_rest_api.tenant_api_gateway.execution_arn}/authorizers/*"
 }

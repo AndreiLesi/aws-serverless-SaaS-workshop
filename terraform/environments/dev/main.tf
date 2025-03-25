@@ -79,6 +79,7 @@ module "admin_api_gateway" {
   enable_users_by_tenant_function_name = module.shared_services.enable_users_by_tenant_function.lambda_function_name
   authorizer_function_arn = module.shared_services.shared_services_authorizer_function.lambda_function_arn
   authorizer_function_name = module.shared_services.shared_services_authorizer_function.lambda_function_name
+  authorizer_function_invoke_arn = module.shared_services.shared_services_authorizer_function.lambda_function_invoke_arn
 }
 
 ###################################################

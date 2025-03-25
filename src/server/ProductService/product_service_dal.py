@@ -8,9 +8,9 @@ from botocore.exceptions import ClientError
 import uuid
 import json
 import logger
+import metrics_manager
 import random
 import threading
-import metrics_manager
 
 from product_models import Product
 from types import SimpleNamespace
@@ -18,13 +18,13 @@ from boto3.dynamodb.conditions import Key
 
 table_name = os.environ['PRODUCT_TABLE_NAME']
 
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table(table_name)
+dynamodb = None
 
 suffix_start = 1 
 suffix_end = 10
 
-def get_product(event, key):    
+def get_product(event, key):  
+    table = __get_dynamodb_table(event, dynamodb)  
     try:
         shardId = key.split(":")[0]
         productId = key.split(":")[1] 
@@ -43,6 +43,7 @@ def get_product(event, key):
         return product
 
 def delete_product(event, key):    
+    table = __get_dynamodb_table(event, dynamodb)
     try:
         shardId = key.split(":")[0]
         productId = key.split(":")[1] 
@@ -58,7 +59,8 @@ def delete_product(event, key):
 
 
 def create_product(event, payload):
-    tenantId = event['requestContext']['authorizer']['tenantId']    
+    tenantId = event['requestContext']['authorizer']['tenantId']  
+    table = __get_dynamodb_table(event, dynamodb)  
     
     suffix = random.randrange(suffix_start, suffix_end)
     shardId = tenantId+"-"+str(suffix)
@@ -75,8 +77,7 @@ def create_product(event, payload):
                     'name': product.name,
                     'price': product.price,
                     'category': product.category
-                }, 
-                ReturnConsumedCapacity='TOTAL'
+                }, ReturnConsumedCapacity='TOTAL'
         )
 
         metrics_manager.record_metric(event, "WriteCapacityUnits", "Count", response['ConsumedCapacity']['CapacityUnits'])
@@ -88,6 +89,7 @@ def create_product(event, payload):
         return product
 
 def update_product(event, payload, key):    
+    table = __get_dynamodb_table(event, dynamodb)
     try:
         shardId = key.split(":")[0]
         productId = key.split(":")[1] 
@@ -116,7 +118,8 @@ def update_product(event, payload, key):
         logger.info("UpdateItem succeeded:")
         return product        
 
-def get_products(event, tenantId):    
+def get_products(event, tenantId):
+    table = __get_dynamodb_table(event, dynamodb)    
     get_all_products_response =[]
     try:
         __query_all_partitions(tenantId,get_all_products_response, table, event)
@@ -152,3 +155,15 @@ def __get_tenant_data(partition_id, get_all_products_response, table, event):
             get_all_products_response.append(product)
 
     metrics_manager.record_metric(event, "ReadCapacityUnits", "Count", response['ConsumedCapacity']['CapacityUnits'])        
+
+def __get_dynamodb_table(event, dynamodb):    
+    accesskey = event['requestContext']['authorizer']['accesskey']
+    secretkey = event['requestContext']['authorizer']['secretkey']
+    sessiontoken = event['requestContext']['authorizer']['sessiontoken']    
+    dynamodb = boto3.resource('dynamodb',
+                aws_access_key_id=accesskey,
+                aws_secret_access_key=secretkey,
+                aws_session_token=sessiontoken
+                )        
+        
+    return dynamodb.Table(table_name)

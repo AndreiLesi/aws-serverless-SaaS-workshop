@@ -18,13 +18,13 @@ from boto3.dynamodb.conditions import Key
 
 table_name = os.environ['ORDER_TABLE_NAME']
 
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table(table_name)
+dynamodb = None
 
 suffix_start = 1 
 suffix_end = 10
  
 def get_order(event, key):
+    table = __get_dynamodb_table(event, dynamodb)
     
     try:
         shardId = key.split(":")[0]
@@ -43,6 +43,7 @@ def get_order(event, key):
         return order
 
 def delete_order(event, key):
+    table = __get_dynamodb_table(event, dynamodb)
     
     try:
         shardId = key.split(":")[0]
@@ -60,6 +61,7 @@ def delete_order(event, key):
 
 def create_order(event, payload):
     tenantId = event['requestContext']['authorizer']['tenantId']
+    table = __get_dynamodb_table(event, dynamodb)
     suffix = random.randrange(suffix_start, suffix_end)
     shardId = tenantId+"-"+str(suffix)
     
@@ -82,6 +84,7 @@ def create_order(event, payload):
         return order
 
 def update_order(event, payload, key):
+    table = __get_dynamodb_table(event, dynamodb)
     
     try:
         shardId = key.split(":")[0]
@@ -108,6 +111,7 @@ def update_order(event, payload, key):
         return order
 
 def get_orders(event, tenantId):
+    table = __get_dynamodb_table(event, dynamodb)
     get_all_products_response = []
 
     try:
@@ -145,6 +149,17 @@ def __get_tenant_data(partition_id, get_all_products_response, table, event):
 
     metrics_manager.record_metric(event, "ReadCapacityUnits", "Count", response['ConsumedCapacity']['CapacityUnits'])        
 
+def __get_dynamodb_table(event, dynamodb):    
+    accesskey = event['requestContext']['authorizer']['accesskey']
+    secretkey = event['requestContext']['authorizer']['secretkey']
+    sessiontoken = event['requestContext']['authorizer']['sessiontoken']    
+    dynamodb = boto3.resource('dynamodb',
+                aws_access_key_id=accesskey,
+                aws_secret_access_key=secretkey,
+                aws_session_token=sessiontoken
+                )        
+        
+    return dynamodb.Table(table_name)
 
 def get_order_products_dict(orderProducts):
     orderProductList = []

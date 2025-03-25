@@ -408,6 +408,5 @@ components:
       x-amazon-apigateway-authtype: custom
       x-amazon-apigateway-authorizer:
         authorizerUri: ${BusinessServicesAuthorizerFunction}
-        authorizerCredentials: ${AuthorizerExecutionRoleArn}
         authorizerResultTtlInSeconds: 30
         type: token

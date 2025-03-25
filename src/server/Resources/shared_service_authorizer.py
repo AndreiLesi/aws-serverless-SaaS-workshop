@@ -37,11 +37,11 @@ def lambda_handler(event, context):
 
     if(auth_manager.isSaaSProvider(unauthorized_claims['custom:userRole'])):
         userpool_id = user_pool_operation_user
-        appclient_id = app_client_operation_user
+        appclient_id = app_client_operation_user  
     else:
         #get tenant user pool and app client to validate jwt token against
         userpool_id = tenant_userpool_id
-        appclient_id = tenant_appclient_id
+        appclient_id = tenant_appclient_id 
     
     #get keys for tenant user pool to validate
     keys_url = 'https://cognito-idp.{}.amazonaws.com/{}/.well-known/jwks.json'.format(region, userpool_id)
@@ -84,8 +84,32 @@ def lambda_handler(event, context):
         policy.allowMethod(HttpVerb.PUT, "user/*")
 
     authResponse = policy.build()
+
+    #   Generate STS credentials to be used for FGAC
+    
+    #   Important Note: 
+    #   We are generating STS token inside Authorizer to take advantage of the caching behavior of authorizer
+    #   Another option is to generate the STS token inside the lambda function itself, as mentioned in this blog post: https://aws.amazon.com/blogs/apn/isolating-saas-tenants-with-dynamically-generated-iam-policies/
+    #   Finally, you can also consider creating one Authorizer per microservice in cases where you want the IAM policy specific to that service 
+    
+    iam_policy = auth_manager.getPolicyForUser(user_role, utils.Service_Identifier.SHARED_SERVICES.value, tenant_id, region, aws_account_id)
+    logger.info(iam_policy)
+    
+    role_arn = "arn:aws:iam::{}:role/authorizer-access-role".format(aws_account_id)
+    
+    assumed_role = sts_client.assume_role(
+        RoleArn=role_arn,
+        RoleSessionName="tenant-aware-session",
+        Policy=iam_policy,
+    )
+    credentials = assumed_role["Credentials"]
+
+    #pass sts credentials to lambda
  
     context = {
+        'accesskey': credentials['AccessKeyId'], 
+        'secretkey' : credentials['SecretAccessKey'],
+        'sessiontoken' : credentials["SessionToken"],
         'userName': user_name,
         'userPoolId': userpool_id,
         'tenantId': tenant_id,
@@ -93,6 +117,7 @@ def lambda_handler(event, context):
     }
     
     authResponse['context'] = context
+    
     
     return authResponse
 

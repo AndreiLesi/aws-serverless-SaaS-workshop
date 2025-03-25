@@ -14,6 +14,7 @@ import auth_manager
 import utils
 
 region = os.environ['AWS_REGION']
+sts_client = boto3.client("sts", region_name=region)
 
 userpool_id = os.environ['TENANT_USER_POOL']
 appclient_id = os.environ['TENANT_APP_CLIENT']
@@ -27,6 +28,10 @@ def lambda_handler(event, context):
     jwt_bearer_token = token[1]
     logger.info("Method ARN: " + event['methodArn'])
     
+    #only to get tenant id to get user pool info
+    unauthorized_claims = jwt.get_unverified_claims(jwt_bearer_token)
+    logger.info(unauthorized_claims)
+
     #get keys for tenant user pool to validate
     keys_url = 'https://cognito-idp.{}.amazonaws.com/{}/.well-known/jwks.json'.format(region, userpool_id)
     with urllib.request.urlopen(keys_url) as f:
@@ -45,6 +50,7 @@ def lambda_handler(event, context):
         principal_id = response["sub"]
         user_name = response["cognito:username"]
         tenant_id = response["custom:tenantId"]
+        user_role = response["custom:userRole"]
         
     
     tmp = event['methodArn'].split(':')
@@ -56,19 +62,36 @@ def lambda_handler(event, context):
     policy.region = tmp[3]
     policy.stage = api_gateway_arn_tmp[1]
 
-
-    #roles are not fine-grained enough to allow selectively
+   
     policy.allowAllMethods()        
     
     authResponse = policy.build()
-
+ 
+    iam_policy = auth_manager.getPolicyForUser(user_role, utils.Service_Identifier.BUSINESS_SERVICES.value, tenant_id, region, aws_account_id)
+    logger.info(iam_policy)
+    
+    role_arn = "arn:aws:iam::{}:role/authorizer-access-role".format(aws_account_id)
+    
+    assumed_role = sts_client.assume_role(
+        RoleArn=role_arn,
+        RoleSessionName="tenant-aware-session",
+        Policy=iam_policy,
+    )
+    credentials = assumed_role["Credentials"]
+    #pass sts credentials to lambda
     context = {
+        'accesskey': credentials['AccessKeyId'], # $context.authorizer.key -> value
+        'secretkey' : credentials['SecretAccessKey'],
+        'sessiontoken' : credentials["SessionToken"],
         'userName': user_name,
-        'tenantId': tenant_id        
+        'tenantId': tenant_id,
+        'userPoolId': userpool_id,
+        'userRole': user_role        
     }
-
+    
     authResponse['context'] = context
-
+    
+    
     return authResponse
 
 def validateJWT(token, app_client_id, keys):
